@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AI가 그려주는 나의 초상화</title>
+  <style>
+    :root {
+      --bg: #fff7ee;
+      --card: #ffffff;
+      --ink: #2e2a27;
+      --muted: #716761;
+      --primary: #ff7a9a;
+      --primary-dark: #e85f82;
+      --secondary: #6b8cff;
+      --accent: #ffd166;
+      --green: #8bd3a7;
+      --line: #eadbd1;
+      --shadow: 0 18px 45px rgba(70, 45, 25, 0.14);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 209, 102, .35), transparent 28%),
+        radial-gradient(circle at 90% 10%, rgba(255, 122, 154, .25), transparent 26%),
+        radial-gradient(circle at 84% 88%, rgba(107, 140, 255, .18), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      font-size: clamp(20px, 4vw, 30px);
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #ff7a9a, #ffd166);
+      box-shadow: 0 12px 24px rgba(255, 122, 154, .3);
+      color: #fff;
+      font-size: 24px;
+    }
+
+    .progress-wrap {
+      width: min(320px, 36vw);
+      height: 12px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width .35s ease;
+    }
+
+    .screen {
+      display: none;
+      min-height: calc(100vh - 120px);
+      animation: pop .35s ease both;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(14px) scale(.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .hero, .panel {
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid rgba(234, 219, 209, .9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 4vw, 42px);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      min-height: 560px;
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      gap: 28px;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero:before {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      right: -90px;
+      top: -90px;
+      background: rgba(255, 122, 154, .18);
+    }
+
+    .hero h1 {
+      font-size: clamp(38px, 7vw, 74px);
+      line-height: .98;
+      margin: 0 0 18px;
+      letter-spacing: -0.08em;
+    }
+
+    .hero p {
+      margin: 0 0 24px;
+      font-size: clamp(18px, 2.5vw, 25px);
+      color: var(--muted);
+      line-height: 1.5;
+      font-weight: 650;
+      letter-spacing: -0.04em;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 28px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: #574c45;
+      box-shadow: 0 8px 18px rgba(85, 61, 43, .08);
+    }
+
+    .hero-art {
+      min-height: 360px;
+      border-radius: 36px;
+      background:
+        linear-gradient(180deg, rgba(255, 122, 154, .25), rgba(255, 209, 102, .18)),
+        #fff2f6;
+      border: 3px dashed rgba(255, 122, 154, .45);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-art .face {
+      width: min(330px, 64vw);
+      aspect-ratio: 1 / 1.15;
+      border-radius: 48% 48% 45% 45%;
+      background:
+        radial-gradient(circle at 37% 42%, #2b2b2b 0 7px, transparent 8px),
+        radial-gradient(circle at 63% 42%, #2b2b2b 0 7px, transparent 8px),
+        radial-gradient(circle at 37% 54%, rgba(255,122,154,.65) 0 22px, transparent 23px),
+        radial-gradient(circle at 63% 54%, rgba(255,122,154,.65) 0 22px, transparent 23px),
+        #ffe0cd;
+      border: 12px solid #2e2a27;
+      box-shadow: 0 20px 40px rgba(80,40,20,.2);
+      position: relative;
+      transform: rotate(-1deg);
+    }
+
+    .hero-art .face:before {
+      content: "";
+      position: absolute;
+      width: 80%;
+      height: 45%;
+      left: 10%;
+      top: -16%;
+      border-radius: 48% 48% 20% 20%;
+      background: #2e2a27;
+      box-shadow: 0 22px 0 #2e2a27;
+    }
+
+    .hero-art .face:after {
+      content: "AI 초상화 체험 ♥";
+      position: absolute;
+      bottom: -74px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-1deg);
+      white-space: nowrap;
+      font-size: clamp(23px, 4vw, 36px);
+      font-weight: 1000;
+      color: #3a2f2b;
+    }
+
+    .doodle {
+      position: absolute;
+      font-size: 42px;
+      opacity: .78;
+      filter: drop-shadow(0 7px 8px rgba(0,0,0,.08));
+    }
+    .d1 { left: 32px; top: 34px; transform: rotate(-12deg); }
+    .d2 { right: 38px; top: 72px; transform: rotate(18deg); }
+    .d3 { left: 52px; bottom: 54px; transform: rotate(8deg); }
+    .d4 { right: 54px; bottom: 50px; transform: rotate(-8deg); }
+
+    .big-btn {
+      border: 0;
+      border-radius: 24px;
+      padding: 19px 28px;
+      font-size: clamp(19px, 2.8vw, 26px);
+      font-weight: 1000;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), #ff9966);
+      box-shadow: 0 14px 28px rgba(255, 122, 154, .34);
+      cursor: pointer;
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    .big-btn:active, .option:active, .nav-btn:active {
+      transform: scale(.97);
+    }
+
+    .big-btn.secondary {
+      background: linear-gradient(135deg, var(--secondary), #7cdbff);
+      box-shadow: 0 14px 28px rgba(107, 140, 255, .22);
+    }
+
+    .big-btn.gray {
+      background: #665a52;
+      box-shadow: none;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: #fff0f5;
+      color: var(--primary-dark);
+      font-weight: 1000;
+      margin-bottom: 14px;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: clamp(32px, 5vw, 54px);
+      line-height: 1.08;
+      letter-spacing: -0.075em;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: clamp(17px, 2.2vw, 22px);
+      line-height: 1.45;
+      margin: 0 0 24px;
+      font-weight: 650;
+      letter-spacing: -0.035em;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid.mbti {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .grid.career, .grid.words {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .option {
+      min-height: 76px;
+      border: 2px solid var(--line);
+      border-radius: 24px;
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: clamp(18px, 2.4vw, 25px);
+      font-weight: 1000;
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(72, 42, 24, .07);
+      transition: .16s ease;
+      letter-spacing: -0.045em;
+    }
+
+    .option .emoji {
+      margin-right: 7px;
+      font-size: 1.18em;
+    }
+
+    .option.selected {
+      border-color: var(--primary);
+      background: #fff0f5;
+      box-shadow: 0 12px 24px rgba(255, 122, 154, .18);
+      transform: translateY(-2px);
+    }
+
+    .option.small {
+      min-height: 64px;
+      font-size: clamp(16px, 2.2vw, 22px);
+    }
+
+    .input-card {
+      display: grid;
+      gap: 16px;
+      max-width: 720px;
+    }
+
+    .text-input {
+      width: 100%;
+      border: 3px solid var(--line);
+      border-radius: 24px;
+      background: #fff;
+      color: var(--ink);
+      padding: 22px 22px;
+      font-size: clamp(22px, 3.5vw, 34px);
+      font-weight: 900;
+      outline: none;
+      letter-spacing: -0.045em;
+      box-shadow: 0 10px 24px rgba(72, 42, 24, .07);
+    }
+
+    .text-input:focus {
+      border-color: var(--primary);
+    }
+
+    .notice {
+      border-radius: 22px;
+      background: #fff9e8;
+      border: 1px solid #f2dc9d;
+      color: #705728;
+      padding: 16px 18px;
+      line-height: 1.45;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .debug-box {
+      margin-top: 2px;
+      background: #f3f7ff;
+      border-color: #cbdcff;
+      color: #29436f;
+      word-break: break-word;
+      font-size: 14px;
+    }
+
+    .debug-box.error {
+      background: #fff1f1;
+      border-color: #ffcaca;
+      color: #8a2f2f;
+    }
+
+    .camera-layout {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .camera-box {
+      background: #2c2b2d;
+      border-radius: 30px;
+      overflow: hidden;
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      border: 6px solid #fff;
+      box-shadow: 0 14px 34px rgba(0,0,0,.14);
+    }
+
+    video, canvas, .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      max-height: 520px;
+    }
+
+    .camera-placeholder {
+      color: white;
+      text-align: center;
+      padding: 28px;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.45;
+    }
+
+    .camera-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .file-label {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 24px;
+      padding: 17px 22px;
+      font-size: 19px;
+      font-weight: 1000;
+      color: #fff;
+      background: linear-gradient(135deg, #665a52, #89776d);
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .file-label input {
+      display: none;
+    }
+
+    .nav {
+      margin-top: 26px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      border: 0;
+      border-radius: 20px;
+      padding: 15px 22px;
+      font-size: 18px;
+      font-weight: 1000;
+      cursor: pointer;
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 20px rgba(72, 42, 24, .07);
+    }
+
+    .nav-btn.primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), #ff9966);
+      border: none;
+    }
+
+    .nav-btn:disabled {
+      opacity: .45;
+      filter: grayscale(1);
+      cursor: not-allowed;
+    }
+
+    .loading-card {
+      display: grid;
+      place-items: center;
+      min-height: 560px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 154px;
+      height: 154px;
+      border-radius: 50%;
+      background:
+        conic-gradient(from 0deg, var(--primary), var(--accent), var(--secondary), var(--primary));
+      position: relative;
+      animation: spin 1.1s linear infinite;
+      margin-bottom: 28px;
+    }
+
+    .spinner:after {
+      content: "🎨";
+      position: absolute;
+      inset: 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: white;
+      font-size: 58px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .portrait-card {
+      background: #fff;
+      border-radius: 32px;
+      border: 1px solid var(--line);
+      padding: 16px;
+      box-shadow: 0 15px 30px rgba(72, 42, 24, .09);
+    }
+
+    .portrait-frame {
+      aspect-ratio: 4 / 5;
+      border-radius: 24px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(255,209,102,.35), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(255,122,154,.35), transparent 30%),
+        #fff0f5;
+      display: grid;
+      place-items: center;
+      position: relative;
+      border: 3px dashed rgba(255, 122, 154, .35);
+    }
+
+    .portrait-frame img {
+      width: 72%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 10px solid rgba(255,255,255,.85);
+      box-shadow: 0 16px 35px rgba(0,0,0,.16);
+      filter: saturate(1.05) contrast(.98);
+    }
+
+    .portrait-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 47%, transparent 0 25%, rgba(255, 255, 255, .12) 26% 27%, transparent 28%),
+        repeating-linear-gradient(-12deg, rgba(255,255,255,.08) 0 2px, transparent 2px 8px);
+      mix-blend-mode: soft-light;
+    }
+
+    .portrait-title {
+      position: absolute;
+      bottom: 22px;
+      left: 18px;
+      right: 18px;
+      text-align: center;
+      color: #3a2f2b;
+      font-size: clamp(22px, 3vw, 34px);
+      font-weight: 1000;
+      letter-spacing: -0.06em;
+      text-shadow: 0 2px 0 rgba(255,255,255,.8);
+    }
+
+    .result-text {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      padding: clamp(20px, 3vw, 30px);
+      box-shadow: 0 15px 30px rgba(72, 42, 24, .09);
+    }
+
+    .result-title {
+      font-size: clamp(29px, 4vw, 46px);
+      line-height: 1.1;
+      margin: 0 0 12px;
+      font-weight: 1000;
+      letter-spacing: -0.075em;
+    }
+
+    .result-desc {
+      margin: 0 0 18px;
+      font-size: clamp(18px, 2.3vw, 23px);
+      color: var(--muted);
+      line-height: 1.55;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 16px 0;
+    }
+
+    .result-tag {
+      border-radius: 999px;
+      padding: 9px 12px;
+      background: #fff0f5;
+      color: #c84c6e;
+      font-weight: 900;
+      border: 1px solid #ffd5df;
+    }
+
+    textarea.prompt-box {
+      width: 100%;
+      min-height: 170px;
+      resize: vertical;
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      padding: 16px;
+      outline: none;
+      font-size: 15px;
+      line-height: 1.55;
+      color: #4b403a;
+      background: #fffaf7;
+      margin-top: 14px;
+    }
+
+    .api-box {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 22px;
+      background: #eef4ff;
+      border: 1px solid #ccdcff;
+      color: #31508c;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(46, 42, 39, .94);
+      color: white;
+      padding: 13px 18px;
+      border-radius: 999px;
+      font-weight: 900;
+      opacity: 0;
+      transition: .22s ease;
+      pointer-events: none;
+      z-index: 30;
+      text-align: center;
+      max-width: calc(100vw - 36px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 16px;
+      border-radius: 3px;
+      top: -20px;
+      animation: fall 1.8s ease-in forwards;
+      z-index: 20;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(105vh) rotate(660deg);
+        opacity: .1;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .app { padding: 14px; }
+      .topbar { align-items: flex-start; }
+      .progress-wrap { width: 145px; margin-top: 8px; }
+      .hero, .camera-layout, .result-layout {
+        grid-template-columns: 1fr;
+      }
+      .hero { min-height: auto; }
+      .hero-art { min-height: 310px; }
+      .grid.mbti {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .grid.career, .grid.words {
+        grid-template-columns: 1fr;
+      }
+      .camera-box {
+        min-height: 330px;
+      }
+      .nav {
+        flex-direction: column-reverse;
+        align-items: stretch;
+      }
+      .nav-btn, .big-btn {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      body { background: white; }
+      .topbar, .nav, .api-box, .prompt-box, .big-btn, .nav-btn { display: none !important; }
+      .screen { display: none !important; }
+      #screen-result { display: block !important; }
+      .result-layout { grid-template-columns: 1fr 1fr; }
+      .panel { box-shadow: none; border: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">🎨</div>
+        <div>AI가 그려주는 나의 초상화</div>
+      </div>
+      <div class="progress-wrap" aria-label="진행률">
+        <div class="progress" id="progress"></div>
+      </div>
+    </div>
+
+    <section class="screen active" id="screen-start">
+      <div class="hero">
+        <div>
+          <h1>30초 자기이해<br>AI 초상화 체험</h1>
+          <p>
+            사진을 찍고, MBTI·좋아하는 연예인·희망진로·나를 표현하는 단어를 고르면
+            나만의 분위기가 담긴 AI 초상화 프롬프트가 만들어집니다.
+          </p>
+          <div class="chip-row">
+            <span class="chip">📸 사진 촬영</span>
+            <span class="chip">🧠 MBTI 선택</span>
+            <span class="chip">🌟 취향 반영</span>
+            <span class="chip">🚀 진로 이미지</span>
+          </div>
+          <button class="big-btn" onclick="go(1)">시작하기</button>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <span class="doodle d1">✿</span>
+          <span class="doodle d2">♡</span>
+          <span class="doodle d3">✦</span>
+          <span class="doodle d4">✿</span>
+          <div class="face"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-photo">
+      <div class="panel">
+        <div class="step-label">1단계 · 사진 촬영</div>
+        <h2>초상화에 사용할 사진을 준비해요</h2>
+        <p class="hint">태블릿 카메라로 촬영하거나, 저장된 사진을 불러올 수 있습니다.</p>
+
+        <div class="camera-layout">
+          <div class="camera-box" id="cameraBox">
+            <video id="video" autoplay playsinline muted style="display:none;"></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="preview" class="preview-img" style="display:none;" alt="촬영한 사진 미리보기" />
+            <div class="camera-placeholder" id="cameraPlaceholder">
+              카메라 시작 버튼을 눌러주세요.<br>
+              카메라가 안 되면 사진 불러오기를 사용하세요.
+            </div>
+          </div>
+          <div class="camera-controls">
+            <button class="big-btn secondary" onclick="startCamera()">카메라 시작</button>
+            <button class="big-btn" onclick="capturePhoto()">사진 찍기</button>
+            <label class="file-label">
+              스마트폰 카메라/사진 선택
+              <input type="file" accept="image/*" capture="user" onclick="this.value=''" onchange="loadPhoto(event)" />
+            </label>
+            <button class="big-btn gray" onclick="clearPhoto()">다시 준비하기</button>
+            <div class="notice">
+              행사 운영 시에는 촬영 동의와 원본 사진 저장 여부를 반드시 안내하세요.
+              이 샘플 파일은 사진을 외부 서버로 전송하지 않습니다.
+            </div>
+            <div class="notice debug-box" id="cameraDebug">
+              디버그: 대기 중입니다. 카메라 시작을 눌렀을 때 실패 이유가 여기에 표시됩니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <button class="nav-btn" onclick="go(0)">처음으로</button>
+          <button class="nav-btn primary" id="photoNext" onclick="go(2)" disabled>다음</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-mbti">
+      <div class="panel">
+        <div class="step-label">2단계 · MBTI</div>
+        <h2>나의 MBTI는?</h2>
+        <p class="hint">알고 있는 MBTI를 선택하세요. 모르면 “잘 모르겠어요”를 누르면 됩니다.</p>
+        <div class="grid mbti" id="mbtiGrid"></div>
+        <div class="nav">
+          <button class="nav-btn" onclick="go(1)">이전</button>
+          <button class="nav-btn primary" id="mbtiNext" onclick="go(3)" disabled>다음</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-celebrity">
+      <div class="panel">
+        <div class="step-label">3단계 · 관심 인물</div>
+        <h2>좋아하는 연예인 이름은?</h2>
+        <p class="hint">좋아하는 연예인, 운동선수, 크리에이터 이름을 적어도 좋아요.</p>
+        <div class="input-card">
+          <input class="text-input" id="celebrityInput" type="text" maxlength="30" placeholder="예: 아이유, 손흥민, 장원영" autocomplete="off" />
+          <div class="notice">
+            좋아하는 인물의 얼굴을 따라 그리는 것이 아니라,
+            학생이 좋아하는 분위기와 이미지 무드만 참고합니다.
+          </div>
+          <button class="nav-btn" onclick="skipCelebrity()">없어요 / 건너뛰기</button>
+        </div>
+
+        <div class="nav">
+          <button class="nav-btn" onclick="go(2)">이전</button>
+          <button class="nav-btn primary" onclick="saveCelebrityAndNext()">다음</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-career">
+      <div class="panel">
+        <div class="step-label">4단계 · 희망진로</div>
+        <h2>나의 희망진로는?</h2>
+        <p class="hint">가장 끌리는 분야를 하나 선택하세요.</p>
+        <div class="grid career" id="careerGrid"></div>
+
+        <div class="input-card" id="careerEtcBox" style="display:none; margin-top:16px;">
+          <input class="text-input" id="careerEtcInput" type="text" maxlength="24" placeholder="희망진로를 직접 입력해 주세요" autocomplete="off" />
+        </div>
+
+        <div class="nav">
+          <button class="nav-btn" onclick="go(3)">이전</button>
+          <button class="nav-btn primary" id="careerNext" onclick="saveCareerAndNext()" disabled>다음</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-word">
+      <div class="panel">
+        <div class="step-label">5단계 · 나를 표현하는 단어</div>
+        <h2>나를 표현하는 단어는?</h2>
+        <p class="hint">초상화의 전체 분위기를 정하는 단어입니다.</p>
+        <div class="grid words" id="wordGrid"></div>
+
+        <div class="nav">
+          <button class="nav-btn" onclick="go(4)">이전</button>
+          <button class="nav-btn primary" id="wordNext" onclick="generate()" disabled>AI 초상화 만들기</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-loading">
+      <div class="panel loading-card">
+        <div class="spinner"></div>
+        <h2>AI가 당신의 분위기를 그리고 있어요!</h2>
+        <p class="hint">사진과 선택한 답변을 바탕으로 초상화 프롬프트를 만드는 중입니다.</p>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-result">
+      <div class="panel">
+        <div class="step-label">완성 · 결과</div>
+        <h2>나의 AI 초상화 카드</h2>
+        <p class="hint">아래 결과는 데모용 미리보기입니다. 실제 AI 이미지 생성은 API 백엔드 연결 후 작동합니다.</p>
+
+        <div class="result-layout">
+          <div class="portrait-card">
+            <div class="portrait-frame" id="portraitFrame">
+              <img id="resultPhoto" alt="초상화 미리보기" />
+              <div class="portrait-overlay"></div>
+              <div class="portrait-title" id="portraitTitle">AI 초상화 체험 ♥</div>
+            </div>
+          </div>
+          <div class="result-text">
+            <h3 class="result-title" id="resultTitle"></h3>
+            <p class="result-desc" id="resultDesc"></p>
+            <div class="tag-list" id="tagList"></div>
+
+            <button class="nav-btn primary" onclick="copyPrompt()">AI 이미지 생성 프롬프트 복사</button>
+            <button class="nav-btn" onclick="downloadCard()">결과 카드 JPG 저장</button>
+            <button class="nav-btn" onclick="window.print()">인쇄하기</button>
+
+            <textarea class="prompt-box" id="promptBox" readonly></textarea>
+
+            <div class="api-box">
+              현재 파일은 행사 시연용 프론트엔드입니다. 실제 “AI 초상화 생성” 버튼으로 이미지를 만들려면
+              Vercel, Apps Script, Cloud Run 같은 백엔드에 이미지 생성 API를 연결해야 합니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <button class="nav-btn" onclick="resetAll()">처음부터 다시</button>
+          <button class="nav-btn primary" onclick="go(1)">다른 사진으로 다시</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">완료</div>
+
+  <script>
+    const screens = [
+      "screen-start",
+      "screen-photo",
+      "screen-mbti",
+      "screen-celebrity",
+      "screen-career",
+      "screen-word",
+      "screen-loading",
+      "screen-result"
+    ];
+
+    const state = {
+      photoData: "",
+      mbti: "",
+      celebrity: "",
+      career: "",
+      word: "",
+      prompt: "",
+      title: "",
+      desc: ""
+    };
+
+    const mbtis = [
+      "ISTJ", "ISFJ", "INFJ", "INTJ",
+      "ISTP", "ISFP", "INFP", "INTP",
+      "ESTP", "ESFP", "ENFP", "ENTP",
+      "ESTJ", "ESFJ", "ENFJ", "ENTJ",
+      "잘 모르겠어요"
+    ];
+
+    const careers = [
+      ["예술·디자인", "🎨"],
+      ["방송·연예·크리에이터", "🎥"],
+      ["요리·카페·서비스", "☕"],
+      ["컴퓨터·게임·기술", "💻"],
+      ["교육·돌봄·상담", "🤝"],
+      ["운동·스포츠", "🏃"],
+      ["동물·자연", "🌿"],
+      ["공무원·안정형 직업", "📘"],
+      ["아직 잘 모르겠어요", "🌱"],
+      ["기타 / 직접입력", "✍️"]
+    ];
+
+    const words = [
+      ["귀여운", "💗"],
+      ["멋진", "✨"],
+      ["차분한", "🌿"],
+      ["재미있는", "😄"],
+      ["따뜻한", "☀️"],
+      ["강한", "💪"],
+      ["창의적인", "🎨"],
+      ["자유로운", "🪽"],
+      ["성실한", "📚"],
+      ["밝은", "🌈"]
+    ];
+
+    const careerVisualMap = {
+      "예술·디자인": "컬러 팔레트, 드로잉 도구, 감각적인 배경",
+      "방송·연예·크리에이터": "카메라, 마이크, 무대 조명, 반짝이는 별",
+      "요리·카페·서비스": "따뜻한 카페 분위기, 커피잔, 친절한 서비스 이미지",
+      "컴퓨터·게임·기술": "미래적인 디지털 그래픽, 게임 아이콘, 푸른 조명",
+      "교육·돌봄·상담": "책, 햇살, 하트, 편안하고 신뢰감 있는 배경",
+      "운동·스포츠": "역동적인 선, 에너지 효과, 스포츠 스타 같은 자신감",
+      "동물·자연": "푸른 잎, 동물 발자국, 자연스럽고 편안한 분위기",
+      "공무원·안정형 직업": "정돈된 배경, 신뢰감 있는 색감, 차분한 구도",
+      "아직 잘 모르겠어요": "미래 가능성을 상징하는 새싹, 별, 열린 길",
+    };
+
+    const wordToneMap = {
+      "귀여운": "아기자기하고 사랑스러운 장식, 부드러운 핑크 톤",
+      "멋진": "세련된 구도, 선명한 포인트, 자신감 있는 분위기",
+      "차분한": "부드럽고 편안한 색감, 안정감 있는 배경",
+      "재미있는": "밝은 표정, 경쾌한 장식, 생동감 있는 구성",
+      "따뜻한": "햇살 같은 색감, 편안한 미소, 배려가 느껴지는 분위기",
+      "강한": "힘 있는 선, 당당한 자세, 에너지 넘치는 배경",
+      "창의적인": "자유로운 브러시 터치, 독특한 컬러 포인트, 상상력 있는 장식",
+      "자유로운": "움직임이 느껴지는 구성, 열린 하늘, 가벼운 선",
+      "성실한": "정돈된 배경, 안정적인 색감, 신뢰감 있는 표현",
+      "밝은": "화사한 색감, 빛나는 장식, 긍정적인 에너지"
+    };
+
+    let currentIndex = 0;
+    let stream = null;
+
+    function setup() {
+      renderMbti();
+      renderCareers();
+      renderWords();
+      updateProgress();
+      document.getElementById("celebrityInput").addEventListener("input", () => {
+        state.celebrity = document.getElementById("celebrityInput").value.trim();
+      });
+      document.getElementById("careerEtcInput").addEventListener("input", () => {
+        if (state.career === "기타 / 직접입력") {
+          document.getElementById("careerNext").disabled = !document.getElementById("careerEtcInput").value.trim();
+        }
+      });
+    }
+
+    function renderMbti() {
+      const grid = document.getElementById("mbtiGrid");
+      grid.innerHTML = "";
+      mbtis.forEach(m => {
+        const b = document.createElement("button");
+        b.className = "option small";
+        b.textContent = m;
+        b.onclick = () => {
+          state.mbti = m;
+          selectInGrid(grid, b);
+          document.getElementById("mbtiNext").disabled = false;
+          clickSound();
+        };
+        grid.appendChild(b);
+      });
+    }
+
+    function renderCareers() {
+      const grid = document.getElementById("careerGrid");
+      grid.innerHTML = "";
+      careers.forEach(([label, emoji]) => {
+        const b = document.createElement("button");
+        b.className = "option";
+        b.innerHTML = `<span class="emoji">${emoji}</span>${label}`;
+        b.onclick = () => {
+          state.career = label;
+          selectInGrid(grid, b);
+          document.getElementById("careerEtcBox").style.display = label === "기타 / 직접입력" ? "grid" : "none";
+          document.getElementById("careerNext").disabled = label === "기타 / 직접입력" && !document.getElementById("careerEtcInput").value.trim();
+          if (label !== "기타 / 직접입력") document.getElementById("careerNext").disabled = false;
+          clickSound();
+        };
+        grid.appendChild(b);
+      });
+    }
+
+    function renderWords() {
+      const grid = document.getElementById("wordGrid");
+      grid.innerHTML = "";
+      words.forEach(([label, emoji]) => {
+        const b = document.createElement("button");
+        b.className = "option";
+        b.innerHTML = `<span class="emoji">${emoji}</span>${label}`;
+        b.onclick = () => {
+          state.word = label;
+          selectInGrid(grid, b);
+          document.getElementById("wordNext").disabled = false;
+          clickSound();
+        };
+        grid.appendChild(b);
+      });
+    }
+
+    function selectInGrid(grid, selectedButton) {
+      [...grid.children].forEach(c => c.classList.remove("selected"));
+      selectedButton.classList.add("selected");
+    }
+
+    function go(index) {
+      currentIndex = index;
+      screens.forEach((id, i) => {
+        document.getElementById(id).classList.toggle("active", i === index);
+      });
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateProgress() {
+      const percentMap = [0, 16, 34, 50, 66, 82, 92, 100];
+      document.getElementById("progress").style.width = (percentMap[currentIndex] || 0) + "%";
+    }
+
+    function setCameraDebug(message, isError = false) {
+      const box = document.getElementById("cameraDebug");
+      if (!box) return;
+      box.textContent = "디버그: " + message;
+      box.classList.toggle("error", !!isError);
+    }
+
+    function describeCameraError(err) {
+      const name = err && err.name ? err.name : "UnknownError";
+      const detail = err && err.message ? " / " + err.message : "";
+
+      const guide = {
+        NotAllowedError: "카메라 권한이 거부되었습니다. 브라우저 주소창의 권한 설정에서 카메라 허용으로 바꿔주세요.",
+        PermissionDeniedError: "카메라 권한이 거부되었습니다. 브라우저 권한 설정을 확인해 주세요.",
+        NotFoundError: "사용 가능한 카메라를 찾지 못했습니다.",
+        DevicesNotFoundError: "사용 가능한 카메라를 찾지 못했습니다.",
+        NotReadableError: "다른 앱이 카메라를 사용 중이거나 기기에서 카메라 접근을 막고 있습니다.",
+        TrackStartError: "카메라를 시작하지 못했습니다. 다른 앱에서 카메라를 사용 중인지 확인해 주세요.",
+        OverconstrainedError: "요청한 카메라 조건을 기기가 맞추지 못했습니다. 기본 조건으로 다시 시도해 주세요.",
+        ConstraintNotSatisfiedError: "요청한 카메라 조건을 기기가 맞추지 못했습니다.",
+        SecurityError: "보안 문제로 카메라 접근이 차단되었습니다.",
+        AbortError: "카메라 시작이 중단되었습니다.",
+        TypeError: "getUserMedia를 사용할 수 없는 환경입니다. HTTPS 주소에서 열어야 합니다."
+      };
+
+      return `${guide[name] || "카메라를 열 수 없습니다."} (${name}${detail})`;
+    }
+
+    function waitForVideoReady(video) {
+      return new Promise(resolve => {
+        if (video.readyState >= 2 && video.videoWidth > 0) {
+          resolve();
+          return;
+        }
+
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          video.removeEventListener("loadedmetadata", finish);
+          video.removeEventListener("canplay", finish);
+          resolve();
+        };
+
+        const timer = setTimeout(finish, 2500);
+        video.addEventListener("loadedmetadata", finish, { once: true });
+        video.addEventListener("canplay", finish, { once: true });
+      });
+    }
+
+    async function startCamera() {
+      setCameraDebug("카메라 시작을 시도합니다.");
+
+      try {
+        if (!window.isSecureContext) {
+          setCameraDebug("현재 페이지가 보안 연결이 아닙니다. getUserMedia 카메라는 HTTPS 또는 localhost에서만 안정적으로 작동합니다. GitHub Pages 같은 HTTPS 주소로 열어주세요.", true);
+          toast("HTTPS 주소에서 열어야 카메라가 작동합니다.");
+          return false;
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setCameraDebug("이 브라우저에서는 navigator.mediaDevices.getUserMedia를 사용할 수 없습니다. 크롬/사파리 최신 버전 또는 HTTPS 주소에서 다시 열어주세요.", true);
+          toast("현재 브라우저에서 직접 카메라를 열 수 없어요.");
+          return false;
+        }
+
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop());
+          stream = null;
+        }
+
+        const constraintsList = [
+          { video: { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+          { video: { facingMode: { ideal: "user" } }, audio: false },
+          { video: true, audio: false }
+        ];
+
+        let lastError = null;
+        for (const constraints of constraintsList) {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            break;
+          } catch (err) {
+            lastError = err;
+          }
+        }
+
+        if (!stream) {
+          setCameraDebug(describeCameraError(lastError), true);
+          toast("카메라를 열 수 없어요. 아래 디버그를 확인해 주세요.");
+          return false;
+        }
+
+        const video = document.getElementById("video");
+        video.setAttribute("playsinline", "");
+        video.setAttribute("webkit-playsinline", "");
+        video.muted = true;
+        video.autoplay = true;
+        video.srcObject = stream;
+
+        await video.play();
+        await waitForVideoReady(video);
+
+        video.style.display = "block";
+        document.getElementById("preview").style.display = "none";
+        document.getElementById("canvas").style.display = "none";
+        document.getElementById("cameraPlaceholder").style.display = "none";
+        document.getElementById("photoNext").disabled = true;
+
+        const track = stream.getVideoTracks()[0];
+        const label = track && track.label ? ` / ${track.label}` : "";
+        setCameraDebug(`카메라 연결 성공${label}`);
+        toast("카메라가 켜졌습니다.");
+        return true;
+      } catch (err) {
+        setCameraDebug(describeCameraError(err), true);
+        toast("카메라를 열 수 없어요. 아래 디버그를 확인해 주세요.");
+        return false;
+      }
+    }
+
+    async function capturePhoto() {
+      const video = document.getElementById("video");
+
+      if (!video.srcObject) {
+        toast("카메라를 먼저 켭니다.");
+        const ok = await startCamera();
+        if (!ok) return;
+      }
+
+      await waitForVideoReady(video);
+
+      if (!video.videoWidth || !video.videoHeight) {
+        setCameraDebug("카메라 영상 크기를 읽지 못했습니다. 카메라 시작 후 1초 뒤 다시 사진 찍기를 눌러주세요.", true);
+        toast("영상 준비 중입니다. 다시 눌러주세요.");
+        return;
+      }
+
+      const canvas = document.getElementById("canvas");
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, w, h);
+      state.photoData = canvas.toDataURL("image/jpeg", 0.9);
+      setPreview(state.photoData);
+      setCameraDebug(`사진 캡처 성공: ${w}×${h}`);
+      toast("사진이 준비되었습니다.");
+    }
+
+    function loadPhoto(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        state.photoData = e.target.result;
+        setPreview(state.photoData);
+        setCameraDebug(`파일 선택/기본 카메라 촬영 성공: ${file.name || "촬영 이미지"}`);
+        toast("사진을 불러왔습니다.");
+      };
+      reader.onerror = () => {
+        setCameraDebug("선택한 사진을 읽지 못했습니다.", true);
+        toast("사진을 읽지 못했습니다.");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function setPreview(dataUrl) {
+      const preview = document.getElementById("preview");
+      preview.src = dataUrl;
+      preview.style.display = "block";
+      document.getElementById("video").style.display = "none";
+      document.getElementById("canvas").style.display = "none";
+      document.getElementById("cameraPlaceholder").style.display = "none";
+      document.getElementById("photoNext").disabled = false;
+    }
+
+    function clearPhoto() {
+      state.photoData = "";
+      document.getElementById("preview").src = "";
+      document.getElementById("preview").style.display = "none";
+      document.getElementById("video").style.display = stream ? "block" : "none";
+      document.getElementById("cameraPlaceholder").style.display = stream ? "none" : "block";
+      document.getElementById("photoNext").disabled = true;
+      setCameraDebug(stream ? "카메라는 켜져 있고, 사진만 초기화했습니다." : "사진을 초기화했습니다. 카메라 시작을 눌러주세요.");
+      toast("사진을 다시 준비합니다.");
+    }
+
+    function skipCelebrity() {
+      state.celebrity = "없음";
+      document.getElementById("celebrityInput").value = "";
+      go(4);
+    }
+
+    function saveCelebrityAndNext() {
+      const value = document.getElementById("celebrityInput").value.trim();
+      state.celebrity = value || "없음";
+      go(4);
+    }
+
+    function saveCareerAndNext() {
+      if (state.career === "기타 / 직접입력") {
+        const etc = document.getElementById("careerEtcInput").value.trim();
+        if (!etc) {
+          toast("희망진로를 입력해 주세요.");
+          return;
+        }
+        state.career = etc;
+      }
+      go(5);
+    }
+
+    function generate() {
+      go(6);
+      setTimeout(() => {
+        buildResult();
+        confetti();
+        go(7);
+      }, 1400);
+    }
+
+    function buildResult() {
+      const mbtiMood = getMbtiMood(state.mbti);
+      const celebrityPhrase = state.celebrity && state.celebrity !== "없음"
+        ? `${state.celebrity}을/를 좋아하는 취향에서 느껴지는 무드`
+        : "자기만의 자연스러운 무드";
+      const careerVisual = careerVisualMap[state.career] || `${state.career}을/를 상징하는 소품과 배경`;
+      const wordTone = wordToneMap[state.word] || `${state.word} 분위기`;
+
+      state.title = makeTitle();
+      state.desc = `${state.word} 분위기와 ${state.career}에 대한 관심을 담아, ${mbtiMood} 느낌의 긍정적인 자기 이미지를 초상화 카드로 표현했어요. 좋아하는 인물 정보는 얼굴 복제가 아니라 분위기 참고로만 사용됩니다.`;
+
+      state.prompt =
+`업로드된 학생 사진을 바탕으로 얼굴 특징, 헤어스타일, 안경 여부, 표정의 기본 인상은 존중하여 유지한다.
+이 활동은 심리검사나 진로검사가 아니라 자기표현형 AI 초상화 체험이다.
+
+학생 선택 정보:
+- MBTI: ${state.mbti}
+- 좋아하는 연예인/관심 인물: ${state.celebrity}
+- 희망진로: ${state.career}
+- 나를 표현하는 단어: ${state.word}
+
+표현 방향:
+- MBTI는 성격을 단정하지 않고, 학생이 선택한 자기표현 키워드로만 반영한다.
+- 좋아하는 인물의 얼굴을 복제하거나 닮게 만들지 말고, ${celebrityPhrase}만 은은하게 반영한다.
+- 희망진로와 관련된 시각 요소: ${careerVisual}
+- 전체 분위기: ${wordTone}
+- ${mbtiMood} 느낌이 나도록 색감과 구도를 구성한다.
+
+스타일:
+귀엽고 따뜻한 크레파스·오일파스텔 스타일의 head-and-shoulders portrait.
+손그림 느낌의 두꺼운 선, 부드러운 질감, 밝은 배경, 작은 하트와 별 장식.
+학생을 존중하고 긍정적으로 표현하며, 학교 행사 기념 카드처럼 완성도 있게 제작한다.
+하단에는 손글씨 느낌으로 “AI 초상화 체험 ♥” 문구를 넣는다.`;
+
+      document.getElementById("resultPhoto").src = state.photoData || "";
+      document.getElementById("resultTitle").textContent = state.title;
+      document.getElementById("resultDesc").textContent = state.desc;
+      document.getElementById("promptBox").value = state.prompt;
+      document.getElementById("portraitTitle").textContent = `${state.title} ♥`;
+
+      const tagList = document.getElementById("tagList");
+      tagList.innerHTML = "";
+      [state.mbti, state.celebrity, state.career, state.word].forEach(v => {
+        const tag = document.createElement("span");
+        tag.className = "result-tag";
+        tag.textContent = v;
+        tagList.appendChild(tag);
+      });
+    }
+
+    function getMbtiMood(mbti) {
+      if (!mbti || mbti === "잘 모르겠어요") return "열린 가능성과 자연스러움";
+      const m = [];
+      if (mbti[0] === "E") m.push("밝고 활기찬");
+      if (mbti[0] === "I") m.push("차분하고 집중력 있는");
+      if (mbti[1] === "N") m.push("상상력과 창의성이 느껴지는");
+      if (mbti[1] === "S") m.push("안정적이고 현실감 있는");
+      if (mbti[2] === "F") m.push("따뜻하고 공감적인");
+      if (mbti[2] === "T") m.push("깔끔하고 논리적인");
+      if (mbti[3] === "J") m.push("정돈되고 신뢰감 있는");
+      if (mbti[3] === "P") m.push("자유롭고 유연한");
+      return m.join(", ");
+    }
+
+    function makeTitle() {
+      const w = state.word || "특별한";
+      let type = "미래형";
+      if (state.career.includes("방송") || state.career.includes("크리에이터")) type = "표현형";
+      else if (state.career.includes("예술") || state.career.includes("디자인")) type = "감성형";
+      else if (state.career.includes("요리") || state.career.includes("서비스")) type = "친절형";
+      else if (state.career.includes("컴퓨터") || state.career.includes("게임") || state.career.includes("기술")) type = "탐구형";
+      else if (state.career.includes("교육") || state.career.includes("돌봄") || state.career.includes("상담")) type = "소통형";
+      else if (state.career.includes("운동") || state.career.includes("스포츠")) type = "에너지형";
+      else if (state.career.includes("동물") || state.career.includes("자연")) type = "자연친화형";
+      else if (state.career.includes("공무원") || state.career.includes("안정")) type = "신뢰형";
+      return `${w} ${type}`;
+    }
+
+    async function copyPrompt() {
+      try {
+        await navigator.clipboard.writeText(state.prompt);
+        toast("프롬프트를 복사했습니다.");
+      } catch {
+        document.getElementById("promptBox").select();
+        document.execCommand("copy");
+        toast("프롬프트를 복사했습니다.");
+      }
+    }
+
+    async function downloadCard() {
+      const frame = document.getElementById("portraitFrame");
+      const img = document.getElementById("resultPhoto");
+      if (!img.src) {
+        toast("사진이 없습니다.");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const ctx = canvas.getContext("2d");
+
+      // Background
+      const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
+      grad.addColorStop(0, "#fff0f5");
+      grad.addColorStop(.55, "#fff7ee");
+      grad.addColorStop(1, "#ffe4b8");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      // Doodles
+      ctx.font = "80px sans-serif";
+      ctx.fillText("✿", 90, 140);
+      ctx.fillText("♡", 900, 160);
+      ctx.fillText("✦", 120, 1160);
+      ctx.fillText("✿", 890, 1110);
+
+      // photo circle
+      await waitImage(img);
+      const size = 620;
+      const x = 230;
+      const y = 230;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(540, y + size/2, size/2, 0, Math.PI * 2);
+      ctx.clip();
+      coverImage(ctx, img, x, y, size, size);
+      ctx.restore();
+
+      // border
+      ctx.lineWidth = 24;
+      ctx.strokeStyle = "rgba(255,255,255,.92)";
+      ctx.beginPath();
+      ctx.arc(540, y + size/2, size/2 + 8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // title
+      ctx.fillStyle = "#3a2f2b";
+      ctx.textAlign = "center";
+      ctx.font = "900 68px sans-serif";
+      wrapText(ctx, state.title + " ♥", 540, 990, 920, 76);
+
+      ctx.font = "700 34px sans-serif";
+      ctx.fillStyle = "#6d5c52";
+      wrapText(ctx, "AI 초상화 체험 · " + state.mbti + " · " + state.career, 540, 1130, 900, 44);
+
+      const link = document.createElement("a");
+      link.download = "AI_초상화_체험_카드.jpg";
+      link.href = canvas.toDataURL("image/jpeg", .92);
+      link.click();
+      toast("JPG 카드가 저장되었습니다.");
+    }
+
+    function coverImage(ctx, img, x, y, w, h) {
+      const iw = img.naturalWidth;
+      const ih = img.naturalHeight;
+      const ir = iw / ih;
+      const r = w / h;
+      let sx, sy, sw, sh;
+      if (ir > r) {
+        sh = ih;
+        sw = ih * r;
+        sx = (iw - sw) / 2;
+        sy = 0;
+      } else {
+        sw = iw;
+        sh = iw / r;
+        sx = 0;
+        sy = (ih - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+    }
+
+    function waitImage(img) {
+      return new Promise(resolve => {
+        if (img.complete) resolve();
+        else img.onload = resolve;
+      });
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(" ");
+      let line = "";
+      for (let n = 0; n < words.length; n++) {
+        const test = line + words[n] + " ";
+        const metrics = ctx.measureText(test);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + " ";
+          y += lineHeight;
+        } else {
+          line = test;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+
+    function resetAll() {
+      state.photoData = "";
+      state.mbti = "";
+      state.celebrity = "";
+      state.career = "";
+      state.word = "";
+      state.prompt = "";
+      state.title = "";
+      state.desc = "";
+
+      document.getElementById("photoNext").disabled = true;
+      document.getElementById("mbtiNext").disabled = true;
+      document.getElementById("careerNext").disabled = true;
+      document.getElementById("wordNext").disabled = true;
+      document.getElementById("celebrityInput").value = "";
+      document.getElementById("careerEtcInput").value = "";
+      document.getElementById("careerEtcBox").style.display = "none";
+      document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+      clearPhoto();
+      go(0);
+    }
+
+    function toast(message) {
+      const t = document.getElementById("toast");
+      t.textContent = message;
+      t.classList.add("show");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+    }
+
+    function confetti() {
+      const colors = ["#ff7a9a", "#ffd166", "#6b8cff", "#8bd3a7", "#ff9966"];
+      for (let i = 0; i < 42; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = Math.random() * .5 + "s";
+        c.style.transform = `rotate(${Math.random() * 180}deg)`;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 2400);
+      }
+    }
+
+    function clickSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.frequency.value = 660;
+        g.gain.setValueAtTime(.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.06, ctx.currentTime + .01);
+        g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + .08);
+        o.start();
+        o.stop(ctx.currentTime + .09);
+      } catch {}
+    }
+
+    setup();
+
+    /*
+      실제 이미지 생성 API 연동 예시 구조
+
+      async function callPortraitApi() {
+        const response = await fetch("/api/generate-portrait", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64: state.photoData,
+            prompt: state.prompt
+          })
+        });
+        const data = await response.json();
+        // data.imageUrl 또는 data.imageBase64를 결과 화면에 표시
+      }
+
+      주의:
+      - 브라우저 HTML에 API 키를 직접 넣으면 안 됩니다.
+      - API 키는 반드시 백엔드 환경변수에 저장해야 합니다.
+      - 학생 사진은 생성 후 자동 삭제되도록 서버 정책을 설계하는 것이 좋습니다.
+    */
+  </script>
+</body>
+</html>
