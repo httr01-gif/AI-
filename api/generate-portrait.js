@@ -7,14 +7,15 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
-  // API 상태 확인용
   if (req.method === "GET") {
-    return res.status(200).json({
-      ok: true,
-      message: "AI 초상화 API가 준비되었습니다. (premium v2)"
-    });
-  }
+     return res.status(200).json({
+       ok: true,
+       message: "AI 초상화 API가 준비되었습니다.",
+       hasOpenAIKey: !!process.env.OPENAI_API_KEY
+  });
+}
+  // API 상태 확인용
+ 
 
   if (req.method !== "POST") {
     return res.status(405).json({
