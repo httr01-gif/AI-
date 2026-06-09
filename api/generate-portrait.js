@@ -68,10 +68,10 @@ ${prompt}
 `.trim();
 
     const formData = new FormData();
-    formData.append("model", "gpt-image-2");
+    formData.append("model", "gpt-image-1.5");
     formData.append("prompt", enhancedPrompt);
     formData.append("size", "1024x1536");
-    formData.append("quality", "high");
+    formData.append("quality", "medium");
     formData.append("output_format", "jpeg");
 
     const imageBlob = new Blob([imageBuffer], { type: mimeType });
