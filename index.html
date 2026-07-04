@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>AI 초상화 스튜디오</title>
-  <!-- v6: 예시 포스터형 출력 레이아웃 적용, 사진 안 제목/사진 아래 행사명, 잘림 방지 유지 -->
+  <!-- v7: 시작화면을 행사 포스터 이미지(poster.jpg 또는 poster.png)로 교체. 이미지 파일을 이 HTML과 같은 폴더에 넣어주세요. -->
   <style>
     :root{
       --bg1:#f6f8ff;
@@ -40,19 +40,17 @@
     @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
     .hero,.panel{background:rgba(255,255,255,.88);border:1px solid rgba(234,223,216,.95);border-radius:var(--radius);box-shadow:var(--shadow);}
-    .hero{padding:clamp(22px,4vw,44px);display:grid;grid-template-columns:1fr .92fr;gap:28px;align-items:center;overflow:hidden;position:relative;}
-    .hero h1{margin:0 0 16px;font-size:clamp(38px,7vw,70px);line-height:.98;letter-spacing:-.09em;}
-    .hero p{margin:0;color:var(--muted);font-size:clamp(17px,2.2vw,23px);line-height:1.55;font-weight:750;letter-spacing:-.04em;}
-    .chip-row{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0 28px;}
-    .chip{padding:9px 13px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:14px;font-weight:900;color:#61564f;box-shadow:0 6px 14px rgba(56,37,22,.06);}
 
-    .hero-preview{min-height:380px;border-radius:32px;background:radial-gradient(circle at 20% 10%,rgba(255,209,102,.34),transparent 28%),radial-gradient(circle at 90% 18%,rgba(255,111,150,.24),transparent 22%),linear-gradient(135deg,#fff7f0,#eef4ff);display:grid;place-items:center;padding:22px;border:1px solid rgba(255,255,255,.9);position:relative;overflow:hidden;}
-    .mini-card{width:min(330px,82%);aspect-ratio:100/148;border-radius:28px;background:#fff;padding:14px;box-shadow:0 26px 54px rgba(30,24,22,.16);transform:rotate(-1.2deg);}
-    .mini-photo{height:72%;border-radius:22px;background:linear-gradient(145deg,#ffd7e2,#ffe8b7 45%,#dce8ff);position:relative;overflow:hidden;}
-    .mini-face{position:absolute;left:50%;top:18%;transform:translateX(-50%);width:52%;aspect-ratio:1/1.16;border-radius:48% 48% 44% 44%;background:radial-gradient(circle at 37% 43%,#2b2b2b 0 5px,transparent 6px),radial-gradient(circle at 63% 43%,#2b2b2b 0 5px,transparent 6px),radial-gradient(circle at 37% 57%,rgba(255,111,150,.55) 0 14px,transparent 15px),radial-gradient(circle at 63% 57%,rgba(255,111,150,.55) 0 14px,transparent 15px),#ffe0cd;border:8px solid #2d2825;}
-    .mini-face:before{content:"";position:absolute;left:10%;top:-14%;width:80%;height:42%;border-radius:48% 48% 24% 24%;background:#2d2825;box-shadow:0 16px 0 #2d2825;}
-    .mini-title{font-weight:1000;font-size:22px;letter-spacing:-.07em;text-align:center;margin-top:16px;}
-    .mini-sub{font-weight:800;color:var(--muted);font-size:12px;text-align:center;margin-top:8px;}
+    /* 시작화면: 포스터 이미지 */
+    .start-wrap{display:grid;gap:18px;justify-items:center;}
+    .start-poster{position:relative;width:100%;border-radius:var(--radius);overflow:hidden;cursor:pointer;background:#fff;border:1px solid rgba(234,223,216,.95);box-shadow:var(--shadow);transition:transform .15s ease;}
+    .start-poster:active{transform:scale(.99);}
+    .start-poster img{display:block;width:100%;height:auto;}
+    .poster-fallback{display:none;}
+    .start-poster.no-image img{display:none;}
+    .start-poster.no-image .poster-fallback{display:grid;place-items:center;min-height:340px;padding:28px;text-align:center;color:var(--muted);font-weight:900;font-size:clamp(16px,2.4vw,22px);line-height:1.6;background:linear-gradient(135deg,#fff7f0,#eef4ff);}
+    .start-btn{min-width:min(420px,100%);animation:pulse 1.6s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.035);}}
 
     .panel{padding:clamp(20px,4vw,38px);}
     .step-label{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:999px;background:#fff0f5;color:#d75078;font-weight:1000;font-size:14px;margin-bottom:12px;}
@@ -138,8 +136,7 @@
     @keyframes fall{to{transform:translateY(105vh) rotate(660deg);opacity:.1}}
 
     @media (max-width:860px){
-      .hero,.camera-layout,.result-layout{grid-template-columns:1fr;}
-      .hero-preview{min-height:310px;}
+      .camera-layout,.result-layout{grid-template-columns:1fr;}
       .grid.mbti{grid-template-columns:repeat(2,1fr);}
       .grid.two{grid-template-columns:1fr;}
       .camera-box{min-height:340px;}
@@ -152,6 +149,7 @@
       .progress-wrap{width:138px;margin-top:8px;}
       .nav{flex-direction:column-reverse;align-items:stretch;}
       .nav-btn,.big-btn{width:100%;}
+      .start-btn{min-width:0;}
       .safe-card-preview{padding:10px;gap:10px;}
     }
     @media print{
@@ -175,22 +173,12 @@
     </div>
 
     <section class="screen active" id="screen-start">
-      <div class="hero">
-        <div>
-          <h1>AI 초상화<br>스튜디오</h1>
-          <p>사진과 나의 선택 정보를 바탕으로, 직업교육박람회에서 바로 저장하고 출력할 수 있는 나만의 AI 초상화를 만듭니다.</p>
-          <div class="chip-row">
-            <span class="chip">📸 사진 준비</span><span class="chip">🧠 나의 정보 선택</span><span class="chip">✨ AI 초상화 생성</span><span class="chip">🖨️ 셀피 출력 안정형</span>
-          </div>
-          <button class="big-btn" onclick="go(1)">시작하기</button>
+      <div class="start-wrap">
+        <div class="start-poster" onclick="go(1)">
+          <img src="poster.jpg" alt="2026 경상북도교육청 직업교육박람회 · AI가 그려주는 나의 초상화 · 경산자인학교" onerror="posterError(this)" />
+          <div class="poster-fallback">포스터 이미지를 찾을 수 없습니다.<br>이 HTML 파일과 같은 폴더에 포스터 이미지를<br><b>poster.jpg</b> 또는 <b>poster.png</b> 이름으로 저장해 주세요.</div>
         </div>
-        <div class="hero-preview" aria-hidden="true">
-          <div class="mini-card">
-            <div class="mini-photo"><div class="mini-face"></div></div>
-            <div class="mini-title">AI 초상화 스튜디오</div>
-            <div class="mini-sub">2026 경상북도교육청 직업교육박람회</div>
-          </div>
-        </div>
+        <button class="big-btn start-btn" onclick="go(1)">👆 화면을 눌러 시작하기</button>
       </div>
     </section>
 
@@ -282,6 +270,7 @@
     const wordToneMap={"귀여운":"사랑스럽고 부드러운 핑크 톤","멋진":"세련되고 자신감 있는 분위기","차분한":"편안하고 안정적인 색감","재미있는":"경쾌하고 생동감 있는 포인트","따뜻한":"햇살 같은 포근한 분위기","강한":"당당하고 에너지 넘치는 표현","창의적인":"독특한 컬러와 상상력 있는 구성","자유로운":"열린 하늘과 움직임이 있는 분위기","성실한":"정돈되고 신뢰감 있는 표현","밝은":"화사한 색감과 긍정적인 에너지"};
     let currentIndex=0,stream=null;
 
+    function posterError(img){if(!img.dataset.triedPng){img.dataset.triedPng="1";img.src="poster.png";}else{img.closest(".start-poster").classList.add("no-image");}}
     function setup(){renderMbti();renderCareers();renderWords();renderStyles();updateProgress();document.getElementById("celebrityInput").addEventListener("input",()=>{state.celebrity=document.getElementById("celebrityInput").value.trim();});document.getElementById("careerEtcInput").addEventListener("input",()=>{if(state.career==="기타 / 직접입력")document.getElementById("careerNext").disabled=!document.getElementById("careerEtcInput").value.trim();});}
     function renderMbti(){const g=document.getElementById("mbtiGrid");g.innerHTML="";mbtis.forEach(m=>{const b=document.createElement("button");b.className="option small";b.textContent=m;b.onclick=()=>{state.mbti=m;selectInGrid(g,b);document.getElementById("mbtiNext").disabled=false;clickSound();};g.appendChild(b);});}
     function renderCareers(){const g=document.getElementById("careerGrid");g.innerHTML="";careers.forEach(([label,emoji])=>{const b=document.createElement("button");b.className="option";b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.onclick=()=>{state.career=label;selectInGrid(g,b);document.getElementById("careerEtcBox").style.display=label==="기타 / 직접입력"?"grid":"none";document.getElementById("careerNext").disabled=label==="기타 / 직접입력"&&!document.getElementById("careerEtcInput").value.trim();if(label!=="기타 / 직접입력")document.getElementById("careerNext").disabled=false;clickSound();};g.appendChild(b);});}
