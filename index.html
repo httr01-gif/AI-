@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI 초상화 스튜디오</title>
-  <!-- v9: 음성 안내(voice/*.mp3 우선, 없으면 기기 한국어 음성), 카메라 자동 종료, 클릭음 재사용, 미사용 코드 정리. v8: 8종 스타일 및 내장 썸네일, 원본 유지, 오류 처리, 동일 JPG 인쇄. 기존 v7: 시작화면을 행사 포스터 이미지(poster.jpg 또는 poster.png)로 교체. 이미지 파일을 이 HTML과 같은 폴더에 넣어주세요. -->
+  <!-- v9.1: 행사 문구를 2026 연구학교 중간보고회로 변경. v9: 음성 안내(voice/*.mp3 우선, 없으면 기기 한국어 음성), 카메라 자동 종료, 클릭음 재사용, 미사용 코드 정리. v8: 8종 스타일 및 내장 썸네일, 원본 유지, 오류 처리, 동일 JPG 인쇄. 기존 v7: 시작화면을 행사 포스터 이미지(poster.jpg 또는 poster.png)로 교체. 이미지 파일을 이 HTML과 같은 폴더에 넣어주세요. -->
   <style>
     :root{
       --bg1:#f6f8ff;
@@ -224,7 +224,7 @@
     <section class="screen active" id="screen-start">
       <div class="start-wrap">
         <div class="start-poster" onclick="go(1)">
-          <img src="poster.jpg" alt="2026 경상북도교육청 직업교육박람회 · AI가 그려주는 나의 초상화 · 경산자인학교" onerror="posterError(this)" />
+          <img src="poster.jpg" alt="2026 연구학교 중간보고회 · AI가 그려주는 나의 초상화 · 경산자인학교" onerror="posterError(this)" />
           <div class="poster-fallback">포스터 이미지를 찾을 수 없습니다.<br>이 HTML 파일과 같은 폴더에 포스터 이미지를<br><b>poster.jpg</b> 또는 <b>poster.png</b> 이름으로 저장해 주세요.</div>
         </div>
         <button class="big-btn start-btn" onclick="go(1)">👆 화면을 눌러 시작하기</button><button class="nav-btn" onclick="go(6)">8가지 스타일 먼저 둘러보기</button>
@@ -284,7 +284,7 @@
         <div class="result-layout">
           <div class="result-preview-card">
             <div class="safe-card-preview" id="safeCardPreview" hidden>
-              <div class="safe-image-box"><img id="resultPhoto" alt="AI 초상화 결과" /><div class="photo-event-label">2026 경상북도교육청 직업교육박람회</div></div>
+              <div class="safe-image-box"><img id="resultPhoto" alt="AI 초상화 결과" /><div class="photo-event-label">2026 연구학교 중간보고회</div></div>
               <div class="safe-title" id="cardTitle">AI 초상화 스튜디오</div>
               <div class="safe-sub" id="cardSub">스타일 · MBTI · 진로 · 분위기</div>
             </div>
@@ -500,7 +500,7 @@
       roundPath(ctx,imgX,imgY,imgW,imgH,46);
       ctx.stroke();
 
-      const eventText="2026 경상북도교육청 직업교육박람회";
+      const eventText="2026 연구학교 중간보고회";
       ctx.textAlign="center";
       ctx.shadowColor="transparent";
       ctx.fillStyle="#153968";
